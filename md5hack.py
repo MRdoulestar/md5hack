@@ -6,7 +6,7 @@ s=[0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476]
 
 #左移
 def ROTATE_LEFT(x,n):
-    return (((x) << (n)) | ((x) >> (32-(n))))
+    return (((x) << (n)) | ((x) >> (32-(n)))) &0xffffffff
 
 def F(x,y,z):
     return (((x) & (y)) | ((~x) & (z)))
@@ -19,32 +19,32 @@ def I(x,y,z):
 
 #abcd为链接变量,m为传入的16位明文分组
 def FF(real,a,b,c,d,m,shift,vec):
-    real[a] += F(real[b], real[c], real[d]) + m + vec
-    real[a] = ROTATE_LEFT(real[a], shift)
-    real[a] += real[b]
+    real[a] = (real[a]+(F(real[b], real[c], real[d]) + m + vec&0xffffffff)) &0xffffffff
+    real[a] = ROTATE_LEFT(real[a], shift)&0xffffffff
+    real[a] = (real[a]+real[b])&0xffffffff
 
 def GG(real,a,b,c,d,m,shift,vec):
-    real[a] += G(real[b], real[c], real[d]) + m + vec
-    real[a] = ROTATE_LEFT(a, shift)
-    real[a] += real[b]
+    real[a] = (real[a]+(G(real[b], real[c], real[d]) + m + vec&0xffffffff)) &0xffffffff
+    real[a] = ROTATE_LEFT(real[a], shift)&0xffffffff
+    real[a] = (real[a]+real[b])&0xffffffff
 
 def HH(real,a,b,c,d,m,shift,vec):
-    real[a] += H(real[b], real[c], real[d]) + m + vec
-    real[a] = ROTATE_LEFT(a, shift)
-    real[a] += real[b]
+    real[a] = (real[a]+(H(real[b], real[c], real[d]) + m + vec&0xffffffff)) &0xffffffff
+    real[a] = ROTATE_LEFT(real[a], shift)&0xffffffff
+    real[a] = (real[a]+real[b])&0xffffffff
 
 def II(real,a,b,c,d,m,shift,vec):
-    real[a] += I(real[b], real[c], real[d]) + m + vec
-    real[a] = ROTATE_LEFT(a, shift)
-    real[a] += real[b]
+    real[a] = (real[a]+(I(real[b], real[c], real[d]) + m + vec&0xffffffff)) &0xffffffff
+    real[a] = ROTATE_LEFT(real[a], shift)&0xffffffff
+    real[a] = (real[a]+real[b])&0xffffffff
 
 
 
 
 
 
-#M=[0x6162, 0x6380] + [0x00]*26 + [0x1800, 0x00, 0x00, 0x00]
-M=[0]*16
+M=[0x6162, 0x6380] + [0x00]*26 + [0x1800, 0x00, 0x00, 0x00]
+#M=[0]*16
 a,b,c,d=S[0],S[1],S[2],S[3]
 #x为16个明文分组，数字为左移位数
 FF (S,0, 1, 2, 3, M[0],  7,  0xd76aa478) 
@@ -115,12 +115,16 @@ II (S,3, 0, 1, 2, M[11], 10, 0xbd3af235)
 II (S,2, 3, 0, 1, M[2], 15, 0x2ad7d2bb)  
 II (S,1, 2, 3, 0, M[9], 21, 0xeb86d391)
 
-s[0] += S[0]
-s[1] += S[1]
-s[2] += S[2]
-s[3] += S[3]
+
+for i in s:
+    print(hex(i).replace('0x',''),end='')
+print()
+
+s[0] =(s[0] + S[0])&0xffffffff
+s[1] =(s[0] + S[1])&0xffffffff
+s[2] =(s[0] + S[2])&0xffffffff
+s[3] =(s[0] + S[3])&0xffffffff
 
 #print(M)
-for i in s:
-    print(hex(i).replace('0x',''))
+print("%x%x%x%x" % (s[0],s[1],s[2],s[3]))
 print()
